@@ -20,6 +20,8 @@ XsmmBuffer BlitzXsmmPrepare2D(
     const size_t padding_h, const size_t padding_w){
     libxsmm_dnn_conv_desc conv_desc;
     libxsmm_dnn_err_t status;
+    //when use omp_get_num_threads, there will be a problem
+    //the reason is to be found
     int num_threads = omp_get_max_threads();
     //int num_threads = 68;
     //setup libxsmm handle
