@@ -20,19 +20,16 @@ XsmmBuffer BlitzXsmmPrepare2D(
     const size_t padding_h, const size_t padding_w){
     libxsmm_dnn_conv_desc conv_desc;
     libxsmm_dnn_err_t status;
-#if defined(_OPENMP)
-    int num_threads = omp_get_num_threads();
-#else
-    int num_threads = 1;
-#endif
-       //setup libxsmm handle
+    int num_threads = omp_get_max_threads();
+    //int num_threads = 68;
+    //setup libxsmm handle
     if(buffer_layout == BLITZ_BUFFER_NCHW) {
          conv_desc.buffer_format = LIBXSMM_DNN_CONV_FORMAT_LIBXSMM;
          if(filter_layout == BLITZ_FILTER_KCRS) {
              conv_desc.filter_format = LIBXSMM_DNN_CONV_FORMAT_LIBXSMM;
          } else if(filter_layout == BLITZ_FILTER_RSCK) {
               LOG(FATAL) << "xsmm kernel does not support LIBXSMM--RSCK convolution";
-//             conv_desc.filter_format = LIBXSMM_DNN_CONV_FORMAT_RSCK;
+              //conv_desc.filter_format = LIBXSMM_DNN_CONV_FORMAT_RSCK;
          } else {
               //@TODO filter in other format
             LOG(FATAL) << "xsmm kernel does not support undefined format convolution";

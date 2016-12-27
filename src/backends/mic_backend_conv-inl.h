@@ -60,6 +60,7 @@ void Backend<MICTensor, DType>::Convolution2DForwardFunc(
   LOG(INFO) << "Forward convolution gemm: " << total_gemm_time;
   LOG(INFO) << "Forward convolution unpack: " << total_unpack_time;
   #endif  // BLITZ_PERFORMANCE
+}
 
 template<typename DType>
 void Backend<MICTensor, DType>::Convolution2DBackwardFunc(
@@ -103,9 +104,10 @@ void Backend<MICTensor, DType>::Convolution2DBackwardFunc(
         NIN, H, W, C, K, R, S,
         stride_height, stride_width,
         padding_height, padding_width);
-      #pragma omp parallel 
+  //    #pragma omp parallel 
       {
-        const size_t tid = omp_get_thread_num();
+//        const size_t tid = omp_get_thread_num();
+        const size_t tid = 0;
         CHKERR_LIBXSMM_DNN(libxsmm_dnn_convolve_st(xsmmBuffer.libxsmm_handle, LIBXSMM_DNN_CONV_KIND_BWD, 0, tid)); 
       }
       break;

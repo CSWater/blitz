@@ -26,6 +26,7 @@ Shape output_shape_nhwc(4);
 
 #define EPSILON 0.000001f
 #define ACCESS(psrc, i, j, k, m, J, K, M) (*(psrc + (m) + (k) * M + (j) * K * M + (i) * J * K * M))
+#define ABS(x) ((x) > 0 ? (x) : (-x))
 
 void zero_buf(float* buf, long size) {
   int i;
@@ -58,12 +59,17 @@ void init_buf(double* buf, long size, int initPos, int initOne)
 
 void compare(float* algo1, float* algo2, size_t size) {
   size_t i = 0;
+  float max_diff = 0.0f;
+  float diff = 0.0f;
   for (i = 0; i < size; ++i) {
-    if ((algo1[i] - algo2[i] > EPSILON )|| (algo1[i] - algo2[i] < -EPSILON)) {
-      std::cout << "Index: " << i << " diff:" << algo1[i] - algo2[i] << std::endl;
+    diff = ABS(algo1[i] - algo[i]);
+    if (diff > max_diff) {
+        max_diff = diff;
     }
   }
+  cout << "max error: " << max_diff << end;
 }
+
 void compare(double* algo1, double* algo2, size_t size) {
   size_t i = 0;
   cout.precision(2);
@@ -167,6 +173,7 @@ void set_filter_shape(size_t K, size_t C, size_t R, size_t S) {
   filter_shape_rsck[2] = C;
   filter_shape_rsck[3] = K;
   filter_shape_rsck.set_data_layout(BLITZ_FILTER_RSCK);
+}
 
 void set_output_shape(size_t N, size_t K, size_t P, size_t Q) {
   //set nkpq
@@ -269,15 +276,14 @@ void convolution_forward(
   MICTensor<float> workspace_mic(workspace_shape_cpu);
   copy_KCRS_to_RSCK(filter_cpu.data(), filter_mic.data(), filter_shape_rsck[0], filter_shape_rsck[1], filter_shape_rsck[2], filter_shape_rsck[3]);
   copy_NCHW_to_NHWC(input_cpu.data(), input_mic.data(), input_shape_nhwc[0], input_shape_nhwc[1], input_shape_nhwc[2], input_shape_nhwc[3] );
-
   //run naive convolution
-  float *naive_input = (float *)malloc(input_cpu.size() * sizeof(float));
-  float *naive_filter = (float *)malloc(filter_cpu.size() * sizeof(float));
-  float *naive_output = (float *)malloc(output_cpu.size() * sizeof(float));
-  cpy(naive_input, input_cpu.data(), input_cpu.size());
-  cpy(naive_filter, filter_cpu.data(), filter_cpu.size());
-  zero_buf(naive_output, output_cpu.size());
-  naive_conv_fp(naive_param, naive_input, naive_output, naive_filter);
+//  float *naive_input = (float *)malloc(input_cpu.size() * sizeof(float));
+//  float *naive_filter = (float *)malloc(filter_cpu.size() * sizeof(float));
+//  float *naive_output = (float *)malloc(output_cpu.size() * sizeof(float));
+//  cpy(naive_input, input_cpu.data(), input_cpu.size());
+//  cpy(naive_filter, filter_cpu.data(), filter_cpu.size());
+//  zero_buf(naive_output, output_cpu.size());
+//  naive_conv_fp(naive_param, naive_input, naive_output, naive_filter);
 
   // cpu convolution 
   Backend<CPUTensor, float>::Convolution2DForwardFunc(
@@ -289,7 +295,6 @@ void convolution_forward(
     str_h, str_w,
     algorithm);
   cout << "cpu fwd finished" << endl;
-
   // mic convolution
   Backend<MICTensor, float>::Convolution2DForwardFunc(
     &input_mic,
@@ -303,12 +308,12 @@ void convolution_forward(
   float *nchw = (float *)malloc(output_cpu.size() * sizeof(float));
   copy_NHWC_to_NCHW(output_mic.data(), nchw, output_shape_nhwc[0], output_shape_nhwc[1],output_shape_nhwc[2], output_shape_nhwc[3]);
 
-  compare(naive_output, output_cpu.data(), output_cpu.size());
+  compare(nchw, output_cpu.data(), output_cpu.size());
 
   free(nchw);
-  free(naive_input);
-  free(naive_output);
-  free(naive_filter);
+//  free(naive_input);
+//  free(naive_output);
+//  free(naive_filter);
 }
 
 void convolution_backward(
@@ -323,7 +328,6 @@ void convolution_backward(
   // init values
   Backend<CPUTensor, float>::UniformDistributionFunc(&filter_cpu, 0.0, 1.0);
   Backend<CPUTensor, float>::UniformDistributionFunc(&output_cpu, 0.0, 1.0);
-
   // set up mic
   MICTensor<float> input_mic(input_shape_nhwc);
   MICTensor<float> filter_mic(filter_shape_rsck);
@@ -332,10 +336,7 @@ void convolution_backward(
   copy_KCRS_to_RSCK(filter_cpu.data(), filter_mic.data(), filter_shape_rsck[0], filter_shape_rsck[1], filter_shape_rsck[2], filter_shape_rsck[3]);
   copy_NCHW_to_NHWC(output_cpu.data(), output_mic.data(),output_shape_nhwc[0], output_shape_nhwc[1], output_shape_nhwc[2], output_shape_nhwc[3] );
 //    memcpy(filter_mic.data(), filter_cpu.data(), sizeof(float) * filter_cpu.size());
-//      memcpy(output_mic.data(), output_cpu.data(), sizeof(float) * output_cpu.size());
-//    cout << "input and output difference" << endl;
-//    compare(filter_cpu.data(), filter_mic.data(), filter_mic.size());
-//    compare(output_cpu.data(), output_mic.data(), output_mic.size());
+//    memcpy(output_mic.data(), output_cpu.data(), sizeof(float) * output_cpu.size());
   
     // cpu convolution 
   Backend<CPUTensor, float>::Convolution2DBackwardFunc(
@@ -347,7 +348,6 @@ void convolution_backward(
     str_h, str_w,
     algorithm);
   cout << "cpu bwd finished" << endl;
-
   // mic convolution
   Backend<MICTensor, float>::Convolution2DBackwardFunc(
     &output_mic,
@@ -378,16 +378,17 @@ void convolution_update(
   // init values
   Backend<CPUTensor, float>::UniformDistributionFunc(&input_cpu, 0.0, 1.0);
   Backend<CPUTensor, float>::UniformDistributionFunc(&output_cpu, 0.0, 1.0);
-
   // set up mic
   MICTensor<float> input_mic(input_shape_nhwc);
   MICTensor<float> filter_mic(filter_shape_rsck);
   MICTensor<float> output_mic(output_shape_nhwc);
   MICTensor<float> workspace_mic(workspace_shape_cpu);
+//  memcpy(input_mic.data(), input_cpu.data(), sizeof(float) * filter_cpu.size());
+//  memcpy(output_mic.data(), output_cpu.data(), sizeof(float) * output_cpu.size());
   copy_NCHW_to_NHWC(input_cpu.data(), input_mic.data(),input_shape_nhwc[0], input_shape_nhwc[1], input_shape_nhwc[2], input_shape_nhwc[3] );
   copy_NCHW_to_NHWC(output_cpu.data(), output_mic.data(),output_shape_nhwc[0], output_shape_nhwc[1], output_shape_nhwc[2], output_shape_nhwc[3] );
 
-    // cpu convolution 
+  // cpu convolution 
   Backend<CPUTensor, float>::Convolution2DUpdateFunc(
     &input_cpu,
     &output_cpu,

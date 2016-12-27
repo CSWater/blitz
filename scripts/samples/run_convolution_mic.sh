@@ -42,20 +42,20 @@
 #phase iter H W N C K R S pad str P Q 
 ##forward:
 ./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 231 231 1 3    96   11 11 0 4 56 56
-./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
-./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
-./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
-./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
+#./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
+#./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution forward convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
 ##backward:
 ./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 231 231 1 3    96   11 11 0 4 56 56
-./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
-./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
-./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
-./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
+#./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
+#./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution backward convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
 ##update:
 ./samples/mic/convolution/convolution update convolution_xsmm_direct 1 231 231 1 3    96   11 11 0 4 56 56
-./samples/mic/convolution/convolution update convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
-./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
-./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
-./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution update convolution_xsmm_direct 1 28  28  1 96   256  5  5  0 1 24 24
+#./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 256  512  3  3  0 1 12 12
+#./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 512  1024 3  3  0 1 12 12
+#./samples/mic/convolution/convolution update convolution_xsmm_direct 1 14  14  1 1024 1024 3  3  0 1 12 12
 
